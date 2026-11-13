@@ -108,7 +108,7 @@ fluGATO 0.4.0 · enp3s0 · 2026-10-14 14:02
 ● INTERNET  host.example:443  38 ms
 ● SWITCH    access-sw-02  192.0.2.250  (LLDP)
 ● PORT      Gi1/0/14  desk 3B west wall
-● VLAN      70 native  trunk  10 VLANs: 10, 20, 30, 522 +6
+● VLAN      40 native  trunk  10 VLANs: 10, 20, 30, 100 +6
 ALL GOOD  9 checks in 4.1 s
 
 $ flugato --once --json | jq -r '.verdict, .rows.LINK.value'
@@ -163,5 +163,7 @@ Found a port that fools it, a switch it cannot hear, or a distro where the insta
 ## License
 
 MIT. Copyright (c) 2026 COMMELO LLC.
+
+The two display overlays in `pi/overlays/` are GPL-2.0: they are device tree overlays in the line of the Raspberry Pi kernel's, and each file says so in its first line. Everything else is MIT.
 
 fluGATO is a courtesy of [COMMELO LLC](https://www.commelo.com), AI automation and senior engineering, with teams in Miami, USA and Belo Horizonte, Brazil.

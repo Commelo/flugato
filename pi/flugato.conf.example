@@ -1,0 +1,82 @@
+# flugato settings, installed as flugato.conf on the boot partition
+# (/boot/firmware/flugato.conf), so they survive the read-only root and can be edited from
+# any PC with the SD card in a reader, or from the web UI on the fluGATO Wi-Fi.
+# Changes apply when flugato restarts (the web UI says which ones apply at once).
+# Site-specific values belong here only, never in the repository.
+
+# Wired interface to test. Empty: first wired interface.
+IFACE=
+
+# Host name resolved for the DNS row and reached on TCP 443 for the INTERNET row.
+# Empty skips both checks.
+CHECK_HOST=
+
+# Seconds to listen for LLDP/CDP after link up (switches send every 30-60 s).
+LLDP_WAIT=90
+
+# The panel: mz61581 (Tontec MZ61581, the default) or ili9486 (the 3.5" "RPi LCD (A)" kind
+# with XPT2046 touch). setup.sh installs its overlay; changing it needs the installer again
+# (./deploy.sh) and a reboot. It also picks the default touch calibration.
+PANEL=
+
+# Framebuffer device. Empty: auto-detect the SPI panel.
+FB=
+
+# 0, 90, 180 or 270. Empty: portrait panels are turned to landscape.
+ROTATE=
+
+# Touch calibration, six numbers a,b,c,d,e,f (x = a*rx + b*ry + c, y = d*rx + e*ry + f).
+# Empty: the values measured on the PANEL above.
+TOUCH_CAL=
+
+# Trunk ports: VLANs to ask for DHCP even if the tester never hears them tagged (spanning
+# tree off on that VLAN, no traffic during the listen). Comma separated, e.g. 60,61
+PROBE_VLANS=
+
+# Cable test: the port the other end of the cable goes into (a USB Ethernet adapter).
+# Empty: the first wired port that isn't IFACE (eth1).
+CABLE_IFACE=
+
+# Name of the Wi-Fi hotspot (up to 32 characters, no #, " or '). Applies at the next
+# hotspot start.
+HOTSPOT_SSID=fluGATO
+
+# Wi-Fi hotspot password (8 to 63 characters, no #, " or '). Empty: a generated one,
+# shown on the panel. Applies at the next hotspot start.
+HOTSPOT_PASSWORD=
+
+# Days a generated hotspot password is kept, across restarts and reboots, before a new
+# one is made (kept in flugato-hotspot.json next to this file). 0: a new one at every start.
+HOTSPOT_PASSWORD_DAYS=7
+
+# Weather on the desk screen: latitude and longitude of the place (south and west are
+# negative). Empty: the place is found from the Pi's internet address (ipinfo.io). The desk
+# clock follows the place's time zone. WEATHER_LAT=off: no weather, the clock only, in the
+# Pi's own time zone. The forecast comes from Open-Meteo (no account) over the Wi-Fi network,
+# once an hour.
+WEATHER_LAT=
+WEATHER_LON=
+
+# Temperatures on the weather board: F (Fahrenheit, the default) or C (Celsius).
+WEATHER_UNITS=F
+
+# The web UI on the Wi-Fi network fluGATO joined (the hotspot needs no PIN): the PIN, 4 to 8
+# digits. Change the default. off: the web UI on the hotspot only.
+WEB_PIN=1234
+
+# Minutes of NO LINK with no touch before the desk screen (clock, weather, the day's tests).
+# 0: never. Shown only once the clock is set from the network.
+DESK_MINUTES=3
+
+# Minutes of NO LINK with no touch between the cat's variety shows (every act once). 0: never.
+SHOW_MINUTES=10
+
+# Desk mode's night (the cat asleep on the rooftop, the weather board dimmed): from-to in
+# hours 0 to 23. off: no night screen.
+NIGHT_HOURS=22-7
+
+# Seconds the weather board and the clock each stay up in desk mode before they swap.
+DESK_TURN=60
+
+# Seconds the panel's "Turn off?" question waits for an answer before it cancels itself.
+POWER_ASK=10

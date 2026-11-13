@@ -1,0 +1,115 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Overlay for the 3.5" 480x320 SPI panel sold as "3.5 Inch TFT Touch LCD Display Module
+ * 480x320 SPI Interface XPT2046 Touch IC" (the "RPi LCD (A)" kind): ILI9486 with 16-bit
+ * registers on CE0, XPT2046 (ADS7846-compatible) touch on CE1, DC GPIO 24, reset GPIO 25,
+ * touch interrupt GPIO 17, no backlight control. Found on a Raspberry Pi 4 (2026-10-18):
+ * - BGR colour order (red and blue swapped without it)
+ * - rotate 270 puts the picture upright with the Pi's USB ports on the right
+ * - the pen-down line is ACTIVE LOW: the overlays that circulate for this panel declare it
+ *   active high, which the current ads7846 driver takes literally; it then reads the chip
+ *   only while nobody touches (hundreds of interrupts a second, never a touch event)
+ *
+ * Build: dtc -@ -I dts -O dtb -o flugato-ili9486.dtbo flugato-ili9486.dts
+ * Use:   PANEL=ili9486 in flugato.conf; pi/setup.sh builds it and sets dtoverlay=flugato-ili9486
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2835", "brcm,bcm2708", "brcm,bcm2709", "brcm,bcm2711", "brcm,bcm2712";
+
+	fragment@0 {
+		target = <&spi0>;
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+	fragment@1 {
+		target = <&spidev0>;
+		__overlay__ {
+			status = "disabled";
+		};
+	};
+
+	fragment@2 {
+		target = <&spidev1>;
+		__overlay__ {
+			status = "disabled";
+		};
+	};
+
+	fragment@3 {
+		target = <&gpio>;
+		__overlay__ {
+			ili9486_pins: ili9486_pins {
+				brcm,pins = <17 24 25>;
+				brcm,function = <0 1 1>; /* in out out */
+			};
+		};
+	};
+
+	fragment@4 {
+		target = <&spi0>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			ili9486: ili9486@0 {
+				compatible = "ilitek,ili9486";
+				reg = <0>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&ili9486_pins>;
+
+				spi-max-frequency = <16000000>;
+				txbuflen = <32768>;
+				rotate = <270>;
+				bgr;
+				fps = <30>;
+				buswidth = <8>;
+				regwidth = <16>;
+				reset-gpios = <&gpio 25 1>;	/* active low */
+				dc-gpios = <&gpio 24 0>;
+				debug = <0>;
+
+				init = <0x10000b0 0x00
+					0x1000011
+					0x20000ff
+					0x100003a 0x55
+					0x1000036 0x28
+					0x10000c2 0x44
+					0x10000c5 0x00 0x00 0x00 0x00
+					0x10000e0 0x0f 0x1f 0x1c 0x0c 0x0f 0x08 0x48 0x98 0x37 0x0a 0x13 0x04 0x11 0x0d 0x00
+					0x10000e1 0x0f 0x32 0x2e 0x0b 0x0d 0x05 0x47 0x75 0x37 0x06 0x10 0x03 0x24 0x20 0x00
+					0x10000e2 0x0f 0x32 0x2e 0x0b 0x0d 0x05 0x47 0x75 0x37 0x06 0x10 0x03 0x24 0x20 0x00
+					0x1000036 0x28
+					0x1000011
+					0x1000029>;
+			};
+
+			ili9486_ts: ili9486_ts@1 {
+				compatible = "ti,ads7846";
+				reg = <1>;
+
+				spi-max-frequency = <2000000>;
+				interrupts = <17 2>; /* high-to-low edge triggered */
+				interrupt-parent = <&gpio>;
+				pendown-gpio = <&gpio 17 1>;	/* active low */
+
+				ti,x-plate-ohms = /bits/ 16 <60>;
+				ti,pressure-max = /bits/ 16 <255>;
+			};
+		};
+	};
+
+	__overrides__ {
+		speed =    <&ili9486>, "spi-max-frequency:0";
+		rotate =   <&ili9486>, "rotate:0";
+		fps =      <&ili9486>, "fps:0";
+		debug =    <&ili9486>, "debug:0";
+		txbuflen = <&ili9486>, "txbuflen:0";
+		swapxy =   <&ili9486_ts>, "ti,swap-xy?";
+	};
+};
